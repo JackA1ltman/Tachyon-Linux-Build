@@ -1,0 +1,35 @@
+name: Build Tachyon
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: archlinux/archlinux:latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get base environment
+        run: |
+          pacman-key --init
+          pacman -Syyu --noconfirm
+
+      - name: Execuate command
+        run: |
+          export BUILD_ROOT="tachyon"
+          bash build-kernel.sh
+
+      - name: Upload Build Artifacts For AnyKernel3
+        uses: actions/upload-artifact@v7
+        with:
+          path: |
+            tachyon/$kernel_name
+            tachyon/$headers_name
+          archive: false
