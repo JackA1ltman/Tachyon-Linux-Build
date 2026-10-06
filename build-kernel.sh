@@ -66,6 +66,9 @@ while [ $# -gt 0 ]; do
   shift
 done
 
+# 后续会 cd 进构建目录，相对路径会让产物 glob 失配，统一转绝对路径
+BUILD_ROOT="$(mkdir -p "$BUILD_ROOT" && realpath "$BUILD_ROOT")"
+
 MAKEPKG_FLAGS=(--noconfirm)
 if [ "$SKIP_PGP_CHECK" = "1" ]; then
   MAKEPKG_FLAGS+=(--skippgpcheck)
