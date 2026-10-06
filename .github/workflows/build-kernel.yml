@@ -40,7 +40,7 @@ jobs:
           path: |
             ${{ env.TACHYON_PKG_DIR }}/${{ env.TACHYON_KERNEL_PKG }}
             ${{ env.TACHYON_PKG_DIR }}/${{ env.TACHYON_HEADERS_PKG }}
-          archive: false
+          archive: true
 
       - name: Generate and Create New Tag
         if: env.TACHYON_SKIP == 0
