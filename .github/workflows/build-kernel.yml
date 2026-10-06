@@ -30,6 +30,41 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           path: |
-            tachyon/$kernel_name
-            tachyon/$headers_name
+            $TACHYON_KERNEL_PKG
+            $TACHYON_HEADERS_PKG
           archive: false
+
+      - name: Generate and Create New Tag
+        run: |
+          # Fetch the latest tag from GitHub (this is the latest tag based on the GitHub API)
+          LATEST_TAG=$(gh api repos/$REPO_OWNER/$REPO_NAME/tags --jq '.[0].name')
+          if [ -z "$LATEST_TAG" ]; then
+            LATEST_TAG="0000000001" # if have no any releases.
+          fi
+
+          NEW_TAG=$(date +%s)
+
+          # Output the new tag to be used
+          echo "New tag: $NEW_TAG"
+
+          # Set the new tag as an environment variable to be used in later steps
+          TIME=$(date +"%Y-%m-%d %H:%M")
+          echo "TIME=$TIME" >> $GITHUB_ENV
+          echo "NEW_TAG=${NEW_TAG}" >> $GITHUB_ENV
+
+          # Create the tag in the repository
+          git tag $NEW_TAG
+          git push --tags
+
+      # Create GitHub Release and upload files if make_release is true
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ env.NEW_TAG }}
+          prerelease: false
+          release_name: "Tachyon ${{ env.TIME }}"
+
+      - name: Upload Release Assets Dynamically
+        run: |
+          gh release upload ${{ env.NEW_TAG }} "$TACHYON_KERNEL_PKG"
+          gh release upload ${{ env.NEW_TAG }} "$TACHYON_HEADERS_PKG"
