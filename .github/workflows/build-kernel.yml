@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ "main" ]
 
+  schedule:
+    - cron: '7 1 * * *'
+
   workflow_dispatch:
 
 jobs:
@@ -14,27 +17,37 @@ jobs:
     container: archlinux/archlinux:latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Get Shell Script
+        uses: actions/checkout@v4
+
+      - name: Check Kernel Version
+        run: |
+          bash build-kernel.sh --skip-if-released
 
       - name: Get base environment
+        if: env.TACHYON_SKIP == 0
         run: |
           pacman-key --init
           pacman -Syyu --noconfirm
+          pacman -S github-cli --noconfirm
 
       - name: Execuate command
+        if: env.TACHYON_SKIP == 0
         run: |
           export BUILD_ROOT="tachyon"
           bash build-kernel.sh
 
       - name: Upload Build Artifacts For AnyKernel3
         uses: actions/upload-artifact@v7
+        if: env.TACHYON_SKIP == 0
         with:
           path: |
-            $TACHYON_KERNEL_PKG
-            $TACHYON_HEADERS_PKG
+            tachyon/$TACHYON_KERNEL_PKG
+            tachyon/$TACHYON_HEADERS_PKG
           archive: false
 
       - name: Generate and Create New Tag
+        if: env.TACHYON_SKIP == 0
         run: |
           # Fetch the latest tag from GitHub (this is the latest tag based on the GitHub API)
           LATEST_TAG=$(gh api repos/$REPO_OWNER/$REPO_NAME/tags --jq '.[0].name')
@@ -59,12 +72,14 @@ jobs:
       # Create GitHub Release and upload files if make_release is true
       - name: Create GitHub Release
         uses: actions/create-release@v1
+        if: env.TACHYON_SKIP == 0
         with:
           tag_name: ${{ env.NEW_TAG }}
           prerelease: false
           release_name: "Tachyon ${{ env.TIME }}"
 
       - name: Upload Release Assets Dynamically
+        if: env.TACHYON_SKIP == 0
         run: |
-          gh release upload ${{ env.NEW_TAG }} "$TACHYON_KERNEL_PKG"
-          gh release upload ${{ env.NEW_TAG }} "$TACHYON_HEADERS_PKG"
+          gh release upload ${{ env.NEW_TAG }} "tachyon/$TACHYON_KERNEL_PKG"
+          gh release upload ${{ env.NEW_TAG }} "tachyon/$TACHYON_HEADERS_PKG"
