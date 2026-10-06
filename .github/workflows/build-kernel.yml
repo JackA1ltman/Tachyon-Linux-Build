@@ -73,5 +73,5 @@ jobs:
         if: env.TACHYON_SKIP == 0
         run: |
           cd $GITHUB_WORKSPACE
-          gh release upload ${{ env.NEW_TAG }} "tachyon/$TACHYON_KERNEL_PKG"
-          gh release upload ${{ env.NEW_TAG }} "tachyon/$TACHYON_HEADERS_PKG"
+          gh release upload ${{ env.NEW_TAG }} "tachyon/${{ env.TACHYON_KERNEL_PKG }}"
+          gh release upload ${{ env.NEW_TAG }} "tachyon/${{ env.TACHYON_HEADERS_PKG }}"
