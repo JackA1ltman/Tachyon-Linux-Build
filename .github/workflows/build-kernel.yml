@@ -22,20 +22,14 @@ jobs:
 
       - name: Check Kernel Version
         run: |
+          export BUILD_ROOT="tachyon"
           bash build-kernel.sh --skip-if-released
 
       - name: Get base environment
         if: env.TACHYON_SKIP == 0
         run: |
-          pacman-key --init
           pacman -Syyu --noconfirm
           pacman -S github-cli --noconfirm
-
-      - name: Execuate command
-        if: env.TACHYON_SKIP == 0
-        run: |
-          export BUILD_ROOT="tachyon"
-          bash build-kernel.sh
 
       - name: Upload Build Artifacts For AnyKernel3
         uses: actions/upload-artifact@v7
