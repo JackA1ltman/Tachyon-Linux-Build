@@ -38,13 +38,14 @@ jobs:
         if: env.TACHYON_SKIP == 0
         with:
           path: |
-            tachyon/$TACHYON_KERNEL_PKG
-            tachyon/$TACHYON_HEADERS_PKG
+            ${{ env.TACHYON_PKG_DIR }}/${{ env.TACHYON_KERNEL_PKG }}
+            ${{ env.TACHYON_PKG_DIR }}/${{ env.TACHYON_HEADERS_PKG }}
           archive: false
 
       - name: Generate and Create New Tag
         if: env.TACHYON_SKIP == 0
         run: |
+          cd $GITHUB_WORKSPACE
           NEW_TAG="${{ env.TACHYON_VERSION }}"
 
           # Output the new tag to be used
@@ -71,5 +72,6 @@ jobs:
       - name: Upload Release Assets Dynamically
         if: env.TACHYON_SKIP == 0
         run: |
+          cd $GITHUB_WORKSPACE
           gh release upload ${{ env.NEW_TAG }} "tachyon/$TACHYON_KERNEL_PKG"
           gh release upload ${{ env.NEW_TAG }} "tachyon/$TACHYON_HEADERS_PKG"
