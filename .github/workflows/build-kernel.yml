@@ -42,36 +42,25 @@ jobs:
             ${{ env.TACHYON_PKG_DIR }}/${{ env.TACHYON_HEADERS_PKG }}
           archive: true
 
-      - name: Generate and Create New Tag
+      - name: Set Release Variables
         if: env.TACHYON_SKIP == 0
         run: |
-          cd $GITHUB_WORKSPACE
           NEW_TAG="${{ env.TACHYON_VERSION }}"
-
-          # Output the new tag to be used
-          echo "New tag: $NEW_TAG"
-
-          # Set the new tag as an environment variable to be used in later steps
           TIME=$(date +"%Y-%m-%d %H:%M")
+
+          echo "New tag: $NEW_TAG"
           echo "TIME=$TIME" >> $GITHUB_ENV
           echo "NEW_TAG=${NEW_TAG}" >> $GITHUB_ENV
 
-          # Create the tag in the repository
-          git tag $NEW_TAG
-          git push --tags
-
-      # Create GitHub Release and upload files if make_release is true
-      - name: Create GitHub Release
-        uses: actions/create-release@v1
+      - name: Create GitHub Release and Upload Assets
         if: env.TACHYON_SKIP == 0
-        with:
-          tag_name: ${{ env.NEW_TAG }}
-          prerelease: false
-          release_name: "Tachyon ${{ env.TIME }}"
-
-      - name: Upload Release Assets Dynamically
-        if: env.TACHYON_SKIP == 0
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd $GITHUB_WORKSPACE
-          gh release upload ${{ env.NEW_TAG }} "tachyon/${{ env.TACHYON_KERNEL_PKG }}"
-          gh release upload ${{ env.NEW_TAG }} "tachyon/${{ env.TACHYON_HEADERS_PKG }}"
+
+          gh release create "${{ env.NEW_TAG }}" \
+            "${{ env.TACHYON_PKG_DIR }}/${{ env.TACHYON_KERNEL_PKG }}" \
+            "${{ env.TACHYON_PKG_DIR }}/${{ env.TACHYON_HEADERS_PKG }}" \
+            --title "Tachyon ${{ env.TIME }}" \
+            --notes "Automated build for Tachyon ${{ env.NEW_TAG }}"
