@@ -1,5 +1,8 @@
 name: Build Tachyon
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [ "main" ]
@@ -53,14 +56,14 @@ jobs:
           echo "NEW_TAG=${NEW_TAG}" >> $GITHUB_ENV
 
       - name: Create GitHub Release and Upload Assets
+        uses: softprops/action-gh-release@v3
         if: env.TACHYON_SKIP == 0
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd $GITHUB_WORKSPACE
-
-          gh release create "${{ env.NEW_TAG }}" \
-            "${{ env.TACHYON_PKG_DIR }}/${{ env.TACHYON_KERNEL_PKG }}" \
-            "${{ env.TACHYON_PKG_DIR }}/${{ env.TACHYON_HEADERS_PKG }}" \
-            --title "Tachyon ${{ env.TIME }}" \
-            --notes "Automated build for Tachyon ${{ env.NEW_TAG }}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.NEW_TAG }}
+          name: "Tachyon ${{ env.TIME }}"
+          prerelease: false
+          files: |
+            ${{ env.TACHYON_PKG_DIR }}/${{ env.TACHYON_KERNEL_PKG }}
+            ${{ env.TACHYON_PKG_DIR }}/${{ env.TACHYON_HEADERS_PKG }}
