@@ -52,7 +52,6 @@ jobs:
           TIME=$(date +"%Y-%m-%d %H:%M")
 
           echo "New tag: $NEW_TAG"
-          echo "TIME=$TIME" >> $GITHUB_ENV
           echo "NEW_TAG=${NEW_TAG}" >> $GITHUB_ENV
 
       - name: Create GitHub Release and Upload Assets
@@ -62,7 +61,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.NEW_TAG }}
-          name: "Tachyon ${{ env.TIME }}"
+          name: "Tachyon ${{ env.NEW_TAG }}"
           prerelease: false
           files: |
             ${{ env.TACHYON_PKG_DIR }}/${{ env.TACHYON_KERNEL_PKG }}
